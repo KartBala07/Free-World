@@ -10,7 +10,7 @@ try{
   assert.equal(username(' River-Town '),'river-town');assert.equal(username('../../bad'),null);
   const world=JSON.parse(JSON.stringify(new Simulation()));
   assert.equal((await request('player-one')).status,200);
-  let save=await request('player-one','PUT',world);assert.equal(save.status,200,await save.clone().text());const rev=save.headers.get('etag');assert.ok(rev);
+  let save=await request('player-one','PUT',world);assert.equal(save.status,200,await save.clone().text());const rev=save.headers.get('x-save-revision');assert.ok(rev);
   const read=await request('player-one');assert.deepEqual((await read.json()).world,world);
   assert.equal((await (await request('player-two')).json()).world,null);
   assert.equal((await request('player-one','PUT',world)).status,409);

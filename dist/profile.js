@@ -11,13 +11,13 @@ async function request(path,options={}){
 }
 export async function cloudLoad(){
   const {response,data}=await request(`/api/worlds/${encodeURIComponent(profile)}`);
-  revision=response.headers.get('etag');conflicted=false;return data.world;
+  revision=response.headers.get('x-save-revision');conflicted=false;return data.world;
 }
 export async function cloudSave(world){
   if(conflicted)throw Object.assign(Error('Another device saved this city. Export your copy and reload before saving.'),{status:409});
   try{
     const {response}=await request(`/api/worlds/${encodeURIComponent(profile)}`,{method:'PUT',headers:{'content-type':'application/json',...(revision?{'if-match':revision}:{'if-none-match':'*'})},body:JSON.stringify(world)});
-    revision=response.headers.get('etag');
+    revision=response.headers.get('x-save-revision');
   }catch(e){if(e.status===409)conflicted=true;throw e;}
 }
 export function logOut(){sessionStorage.removeItem(sessionKey);location.reload()}

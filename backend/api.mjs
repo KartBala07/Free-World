@@ -34,7 +34,7 @@ export async function api(request,env){
     if(request.method==='GET'){
       const object=await env.BUCKET.get(key);
       if(!object)return json({username:name,world:null,revision:null});
-      return new Response(object.body,{headers:{...headers,etag:object.httpEtag}});
+      return new Response(object.body,{headers:{...headers,'x-save-revision':object.httpEtag}});
     }
     if(request.method!=='PUT')return json({error:'Method not allowed.'},405,{allow:'GET, PUT'});
     const origin=request.headers.get('origin');
@@ -51,6 +51,6 @@ export async function api(request,env){
       httpMetadata:{contentType:'application/json',cacheControl:'no-store'}
     });
     if(!result)return json({error:'This city was saved on another device. Export your local copy, then reload the latest cloud save.'},409);
-    return json({savedAt},200,{etag:result.httpEtag});
+    return json({savedAt},200,{'x-save-revision':result.httpEtag});
   }catch(error){return json({error:error.status?error.message:'Cloud saves are temporarily unavailable. Export a backup before leaving.'},error.status||503)}
 }
