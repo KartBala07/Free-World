@@ -1,6 +1,6 @@
 import {avatarCanvas} from './avatars.js';
 import {activityIcons} from './life.js';
-import {typeNames,nearestParcel} from './city.js';
+import {WIDTH,DEPTH,XROAD,ZROAD,typeNames,nearestParcel} from './city.js';
 
 // Original canvas art: no sprites or map assets are copied from the reference demo.
 export function createTown(container){
@@ -42,12 +42,12 @@ export function createTown(container){
   function draw(sim,selected,target,distance,time,tool){
     cx=target.x;cz=target.z;scale=Math.max(2.4,height/(distance*.8));people=sim.citizens;
     g.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);g.imageSmoothingEnabled=false;g.fillStyle='#83bfb7';g.fillRect(0,0,width,height);
-    rect(-96,-72,184,144,'#a5cd7d');rect(88,-72,8,144,'#77bdc8');
+    rect(-WIDTH/2,-DEPTH/2,WIDTH-8,DEPTH,'#a5cd7d');rect(WIDTH/2-8,-DEPTH/2,8,DEPTH,'#77bdc8');
     for(let i=0;i<350;i++){const x=(i*37%181)-94,z=(i*23%140)-70;rect(x,z,.2,.35,i%3?'#93be70':'#badd8e');}
-    for(let x=-80;x<=80;x+=20){rect(x-2.5,-64,5,128,'#ded4ad');rect(x-2.5,-64,.25,128,'#f5e8c2');}
-    for(let z=-60;z<=60;z+=20){rect(-84,z-2.5,168,5,'#ded4ad');rect(-84,z-2.5,168,.25,'#f5e8c2');}
+    for(let x=-XROAD;x<=XROAD;x+=20){rect(x-2.5,-ZROAD-4,5,ZROAD*2+8,'#ded4ad');rect(x-2.5,-ZROAD-4,.25,ZROAD*2+8,'#f5e8c2');}
+    for(let z=-ZROAD;z<=ZROAD;z+=20){rect(-XROAD-4,z-2.5,XROAD*2+8,5,'#ded4ad');rect(-XROAD-4,z-2.5,XROAD*2+8,.25,'#f5e8c2');}
     for(const p of sim.world.parcels)parcel(p);
-    for(let x=-91;x<88;x+=7){tree(x,-67);tree(x,69);}
+    for(let x=-WIDTH/2+5;x<WIDTH/2-8;x+=7){tree(x,-DEPTH/2+5);tree(x,DEPTH/2-3);}
     for(const k of sim.world.closed){const [x,z]=k.split(',').map(Number);rect(x-2,z-.5,4,1,'#cf7764');for(let i=0;i<4;i++)rect(x-1.8+i,z-.5,.4,1,'#ffe6ac');}
     for(const h of sim.world.hazards){const pos=screen(h.x,h.z);g.beginPath();g.arc(pos.x,pos.y,h.radius*scale,0,Math.PI*2);g.fillStyle='#dc686633';g.fill();}
     const current=people.find(c=>c.id===selected);

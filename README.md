@@ -1,14 +1,26 @@
-# Free City
+# Free World
 
 A retro 3D city sandbox where you shape the environment and citizens choose their own lives.
 
 [Open the hosted game](https://free-city-civilization.swathibala988.chatgpt.site) · [Game design and ideas](docs/game-design.md)
 
-The hosted game is public. This GitHub repository is private. GitHub stores the source; the existing Sites deployment remains the game host. Pushing to GitHub does not automatically deploy the Site.
+The hosted game is public. This GitHub repository is public: [KartBala07/Free-World](https://github.com/KartBala07/Free-World). GitHub stores the source; the existing Sites deployment remains the game host. Pushing to GitHub does not automatically deploy the Site.
 
 ## Living-town update
 
-The default top-down town view has original pixel-style interiors, activity bubbles, and a clickable resident strip. Toggle Town view to return to 3D. The Daily life journal shows routines, current location, actual encounter transcripts, relationships, reflections, and observations. Routines influence action scores; survival needs and learned rewards still drive decisions. Conversations occur between nearby citizens at the same destination and are rule-generated, not LLM conversations. Inspired by the presentation of the Generative Agents demo; no demo art or source was copied. Existing city saves and neural weights are preserved.
+The optional top-down town view has original pixel-style interiors, activity bubbles, and a clickable resident strip. 3D is the default view. Toggle to the town map from Observer mode. The Daily life journal shows routines, current location, actual encounter transcripts, relationships, reflections, and observations. Routines influence action scores; survival needs and learned rewards still drive decisions. Conversations occur between nearby citizens at the same destination and are rule-generated, not LLM conversations. Inspired by the presentation of the Generative Agents demo; no demo art or source was copied. Existing city saves and neural weights are preserved.
+
+## Player mode and expanded world
+
+The lobby now includes **Play as a citizen**. The world has 120 lots (previously 48), across a 272 × 224 map. Old saves expand in place while retaining original lot IDs, citizens, memories, and player progress.
+
+- WASD / arrows walk; Q/E or right-drag turns the camera. F interacts with the nearby place. Touch movement buttons are available.
+- Work near a workshop, farm, or market for ¤25 per completed shift. At 40 social credit, shifts pay ¤40.
+- Buy meals for ¤8, rest for energy, and save ¤60 to rent a home.
+- Care for parks or study at libraries to earn social credit. Meeting neighbors earns credit with a cooldown.
+- Social credit is a fictional 0–100 community reputation meter, based only on in-game interactions. It is not tied to real identity, politics, or purchases.
+- Money is fictional game currency, with no real-money payments. Player progress is stored with the same shared-username cloud save. This is a solo simulation with shared save access, not real-time multiplayer or a cheat-resistant economy.
+- Observer mode retains building tools, City Stories, Chaos Lab, and citizen inspection. Player mode uses normal time and disables environmental editing.
 
 ## Play
 
@@ -33,6 +45,7 @@ node tests/simulation.mjs
 node tests/challenges.mjs
 node tests/backend.mjs
 node tests/life.mjs
+node tests/player.mjs
 node scripts/build.mjs
 ```
 

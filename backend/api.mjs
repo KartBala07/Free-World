@@ -9,7 +9,7 @@ export function username(value){
 export function validWorld(w){
   return w && w.version===3 && Number.isFinite(w.day) && Number.isSafeInteger(w.tick) && w.tick>=0 &&
     Array.isArray(w.citizens) && w.citizens.length<=1000 && Array.isArray(w.archived) && w.archived.length<=5000 &&
-    w.world && Array.isArray(w.world.parcels) && w.world.parcels.length===48 &&
+    w.world && Array.isArray(w.world.parcels) && [48,120].includes(w.world.parcels.length) &&
     Array.isArray(w.world.closed) && Array.isArray(w.events) && Number.isFinite(w.food) && Number.isFinite(w.treasury) &&
     [...w.citizens,...w.archived].every(c=>c && Number.isSafeInteger(c.id) && typeof c.name==='string' &&
       Array.isArray(c.memories) && c.brain && typeof c.brain==='object');

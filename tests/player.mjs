@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {Simulation} from '../dist/sim.js';
+import {ensurePlayer,movePlayer,canStand,startPlayerAction,stepPlayer,talkToNeighbor} from '../dist/player.js';
+import {expandCity,route,WIDTH,DEPTH} from '../dist/city.js';
+const sim=new Simulation(),p=ensurePlayer(sim);
+assert.equal(sim.world.parcels.length,120);assert.equal(new Set(sim.world.parcels.map(p=>p.id)).size,120);
+assert.ok(route(sim.world,{x:-120,z:-100},{x:120,z:100}).some(p=>p.x===120));
+const legacy=JSON.parse(JSON.stringify(sim));legacy.world.parcels=legacy.world.parcels.slice(0,48);delete legacy.world.sizeVersion;delete legacy.player;
+const before=JSON.stringify(legacy.citizens[0].brain.weights),resumed=new Simulation(legacy);assert.equal(resumed.world.parcels.length,120);assert.equal(JSON.stringify(resumed.citizens[0].brain.weights),before);assert.equal(expandCity(resumed.world),false);
+const home=sim.world.parcels.find(p=>p.type==='home');assert.equal(canStand(sim,home.x,home.z),false);assert.equal(canStand(sim,WIDTH,DEPTH),false);
+const start=p.x;movePlayer(sim,1,0,.1);assert.ok(p.x>start);
+const work=sim.world.parcels.find(p=>p.type==='work');p.x=work.x;p.z=work.z+8;const cash=p.money;assert.ok(startPlayerAction(sim,'work').ok);assert.equal(p.money,cash);stepPlayer(sim,5);assert.equal(p.money,cash);stepPlayer(sim,5);assert.equal(p.money,cash+25);assert.equal(p.socialCredit,12);assert.equal(startPlayerAction(sim,'work').ok,false);
+p.x=home.x;p.z=home.z+8;assert.ok(startPlayerAction(sim,'rent').ok);assert.equal(p.home,home.id);assert.equal(p.money,15);assert.equal(startPlayerAction(sim,'rent').ok,false);
+const market=sim.world.parcels.find(p=>p.type==='market');p.x=market.x;p.z=market.z+8;p.energy=20;assert.ok(startPlayerAction(sim,'meal').ok);assert.equal(p.money,7);assert.equal(p.energy,50);assert.equal(startPlayerAction(sim,'meal').ok,false);
+const citizen=sim.citizens[0];p.x=citizen.x;p.z=citizen.z;const credit=p.socialCredit;assert.ok(talkToNeighbor(sim).ok);assert.equal(p.socialCredit,credit+3);assert.equal(talkToNeighbor(sim).ok,false);
+const saved=new Simulation(JSON.parse(JSON.stringify(sim)));assert.deepEqual(saved.player,p);
+console.log('PASS: expanded-map migration, outer routing, collision, timed wages, cooldowns, housing, purchases, social credit, and player save round-trip.');
