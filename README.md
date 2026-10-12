@@ -4,7 +4,7 @@ A retro 3D city sandbox where you shape the environment and citizens choose thei
 
 [Open the hosted game](https://free-city-civilization.swathibala988.chatgpt.site) · [Game design and ideas](docs/game-design.md)
 
-The hosted Site and this GitHub repository are currently private. GitHub stores the source; the existing Sites deployment remains the game host. Pushing to GitHub does not automatically deploy the Site.
+The hosted game is public. This GitHub repository is private. GitHub stores the source; the existing Sites deployment remains the game host. Pushing to GitHub does not automatically deploy the Site.
 
 ## Play
 
@@ -12,14 +12,14 @@ The hosted Site and this GitHub repository are currently private. GitHub stores 
 - Click a citizen to see their actions, thoughts, neural activity, memories, and mind folder.
 - Use Environment to build facilities, change conditions, and observe autonomous responses.
 - The lobby offers **City Stories** (cozy building and community challenges) and **Chaos Lab** (survival and free experiments). Switch without resetting your city. Optional challenges add clear objectives, budgets, and saved medals.
-- Time advances while the page is open. Saves and citizen minds are stored in this browser using IndexedDB. Export important worlds and minds from the game to keep independent copies.
+- Time advances while the page is open. Saves and citizen minds are stored in the backend under a shared username, with IndexedDB browser backups. Export important worlds and minds from the game to keep independent copies.
 
 ## Run locally
 
-Requires Python 3 for a local server and Node.js 20+ for tests. No package installation or build step is required.
+Requires Node.js 20+. No package installation is required. The local server includes a disk-backed development adapter; production uses Cloudflare R2.
 
 ```sh
-python3 -m http.server 8080 --directory dist
+node scripts/dev.mjs
 ```
 
 Open http://localhost:8080. For an isolated unsaved test world, open http://localhost:8080/?demo=1.
@@ -27,6 +27,8 @@ Open http://localhost:8080. For an isolated unsaved test world, open http://loca
 ```sh
 node tests/simulation.mjs
 node tests/challenges.mjs
+node tests/backend.mjs
+node scripts/build.mjs
 ```
 
 ## Structure
@@ -37,7 +39,11 @@ node tests/challenges.mjs
 - `dist/challenges.js`: objectives, budgets, rewards, and scenario progression
 - `dist/city.js`: lots, road routes, and environmental state
 - `dist/world.js`: Three.js scene and animated presentation
-- `dist/vault.js`: local persistence and exports
+- `dist/vault.js`: cloud persistence, browser backups, and exports
+- `dist/profile.js`: username lobby and save conflict handling
+- `backend/api.mjs`: shared username save API
+- `scripts/dev.mjs`: local server (data in ignored `.local-data/`)
+- `scripts/build.mjs`: dependency-free Worker packaging
 - `tests/`: simulation and gameplay regression checks
 
 ## What the AI is
@@ -46,6 +52,14 @@ Citizens use a small, procedural, fly-inspired learning model with sparse memory
 
 ## Development and deployment
 
-The `.openai/hosting.json` file identifies the existing hosted Site. Sites tooling packages and deploys the static `dist/` directory. Run the included tests locally before publishing. No automatic GitHub deployment or CI workflow is configured; the repository does not receive Site credentials.
+The `.openai/hosting.json` file identifies the existing hosted Site. `node scripts/build.mjs` creates a Worker with embedded game assets and the backend API in `dist/server/index.js`. The hosting manifest declares the `BUCKET` R2 binding, which Sites provisions. Run the included tests locally before publishing. No automatic GitHub deployment or CI workflow is configured; the repository does not receive Site credentials.
 
 Three.js is vendored in `dist/vendor/three.js`; its license header is retained. Original project code has no open-source license grant yet.
+
+## Shared username login
+
+Enter a name (3–24 letters, numbers, hyphens or underscores) to open a city. Names are case-insensitive. **This is not secure authentication:** anyone knowing the name can read and change that save. There are no passwords, email addresses, private profiles, or account recovery. Logout clears the selected name from that tab; it does not delete the cloud city or revoke anyone else’s access.
+
+Cloud saves include the world, citizen minds, and challenge progress. New profiles start fresh unless the player explicitly chooses to copy an existing browser city. An existing cloud city always takes precedence. Offline/cloud failures do not silently create a replacement city. Export browser backups from the login screen or export the active world from Backup.
+
+The API supports GET/PUT `/api/worlds/:username`. Writes require a matching ETag (or `If-None-Match: *` for new saves), validate the world, reject cross-origin browser writes, and cap each save at 32 MB. Conflicts pause the game and require reloading the latest cloud save; export unsynced work first. This is shared persistence, not real-time multiplayer. There is no public profile directory. Anti-abuse quotas and moderation are not implemented yet; add them before promoting at scale.
