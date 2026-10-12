@@ -1,3 +1,4 @@
+import {infer,learn,actionNames} from './brain.js';
 export const frameworks=['TensorFlow','PyTorch','Scikit-learn','Keras','OpenCV','Hugging Face','NLTK','SpaCy','Gensim','XGBoost'];
 export const jobs=['Engineer','Builder','Economist','Farmer','Medic','Artist','Teacher','Diplomat','Researcher','Merchant'];
 const surnames=['Vale','Park','Reed','Ash','Sol'];
@@ -14,10 +15,18 @@ export class Simulation{
  this.food+=this.citizens.filter(c=>c.job==='Farmer'&&c.age>=18).length*(this.weather==='Rain'?.52:.38)+.08;
  for(const c of [...this.citizens]){c.age+=1/600;c.energy=clamp(c.energy-.18);c.hunger=clamp(c.hunger-.22);c.social=clamp(c.social-.1);if(c.age>=18&&c.job==='Child'){c.job=jobs[c.id%10];this.memory(c,`Began working as a ${c.job.toLowerCase()}.`)}
  const price=1+Math.max(0,(100-this.food)/30);let old=c.action;
- if(c.hunger<48&&this.food>=1&&(c.wealth>=price||this.treasury>=price)){c.action='Eating';c.goal='Stay healthy';c.tx=-13;c.tz=2;if(c.wealth>=price)c.wealth-=price;else this.treasury-=price;this.food--;c.hunger=clamp(c.hunger+32)}
- else if(c.energy<30){c.action='Resting';c.goal='Recover energy';c.tx=17;c.tz=14;c.energy=clamp(c.energy+2)}
- else if(c.social<40){c.action='Socializing';c.goal='Build lasting connections';c.tx=0;c.tz=0;c.social=clamp(c.social+1.8)}
- else{c.action=c.age<18?'Learning':this.tension>65&&c.aggression>40?'Defending':'Working';c.goal=c.age<18?'Discover the world':c.ambition>65?'Build a prosperous legacy':c.empathy>65?'Help the community thrive':'Find security and belonging';const places=[[-18,-14],[-9,-13],[0,-15],[-13,2],[16,-12],[0,0],[8,14],[0,-15],[19,1],[-13,2]];[c.tx,c.tz]=places[c.id%10];if(c.action==='Working'){const wage=.14+c.ambition/900;c.wealth+=wage*(1-this.tax);this.treasury+=wage*this.tax}else if(c.action==='Defending')c.health-=.06}
+ const trace=infer(c,this);c.action=actionNames[trace.chosen];
+ const before=(c.hunger+c.energy+c.social)/300;
+ c.goal=c.age<18?'Discover the world':c.ambition>65?'Build a prosperous legacy':c.empathy>65?'Help the community thrive':'Find security and belonging';
+ if(c.action==='Eating'){c.tx=-13;c.tz=2;if(c.wealth>=price)c.wealth-=price;else this.treasury-=price;this.food--;c.hunger=clamp(c.hunger+12)}
+ if(c.action==='Resting'){c.tx=17;c.tz=14;c.energy=clamp(c.energy+3)}
+ if(c.action==='Socializing'){c.tx=3;c.tz=0;c.social=clamp(c.social+3)}
+ if(c.action==='Working'){const places=[[-18,-10],[-9,-10],[0,-10],[-13,3],[16,-9],[0,0],[8,10],[0,-10],[19,4],[-13,3]];[c.tx,c.tz]=places[c.id%10];const wage=.14+c.ambition/900;c.wealth+=wage*(1-this.tax);this.treasury+=wage*this.tax}
+ if(c.action==='Defending'){c.tx=12;c.tz=8;c.health-=.06}
+ if(c.action==='Learning'){c.tx=8;c.tz=10;c.ambition=clamp(c.ambition+.003);c.social=clamp(c.social+.25)}
+ const reward=(c.hunger+c.energy+c.social)/300-before+(c.action==='Working'?.004:c.action==='Learning'?.002:0)-(c.hunger<15||c.energy<15?.015:0);
+ learn(c,trace,reward);
+
  if(old!==c.action){c.tx+=(Math.random()-.5)*5;c.tz+=(Math.random()-.5)*5}
  if(c.hunger<10)c.health-=.1;else c.health=clamp(c.health+.03);
  if(this.tick%120===0){let change=c.hunger<35?1.5:-.2;c.caution=clamp(c.caution+change);c.empathy=clamp(c.empathy+(c.social>60?.3:-.15));c.adaptation=change>0?'Scarcity raised caution by 1.5.':'Security lowered caution by 0.2.'}
