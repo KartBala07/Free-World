@@ -6,6 +6,10 @@ A retro 3D city sandbox where you shape the environment and citizens choose thei
 
 The hosted game is public. This GitHub repository is private. GitHub stores the source; the existing Sites deployment remains the game host. Pushing to GitHub does not automatically deploy the Site.
 
+## Living-town update
+
+The default top-down town view has original pixel-style interiors, activity bubbles, and a clickable resident strip. Toggle Town view to return to 3D. The Daily life journal shows routines, current location, actual encounter transcripts, relationships, reflections, and observations. Routines influence action scores; survival needs and learned rewards still drive decisions. Conversations occur between nearby citizens at the same destination and are rule-generated, not LLM conversations. Inspired by the presentation of the Generative Agents demo; no demo art or source was copied. Existing city saves and neural weights are preserved.
+
 ## Play
 
 - Drag or use WASD / arrow keys to move. Scroll or use +/− to zoom.
@@ -28,6 +32,7 @@ Open http://localhost:8080. For an isolated unsaved test world, open http://loca
 node tests/simulation.mjs
 node tests/challenges.mjs
 node tests/backend.mjs
+node tests/life.mjs
 node scripts/build.mjs
 ```
 

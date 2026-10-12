@@ -8,5 +8,5 @@ export function nearestParcel(world,x,z){return world.parcels.reduce((a,p)=>Math
 export const road=(v,limit)=>clamp(Math.round(v/20)*20,-limit,limit);
 const key=(x,z)=>`${x},${z}`;
 export function route(world,from,to){const sx=road(from.x,80),sz=road(from.z,60),ex=road(to.x,80),ez=road(to.z,60);const start=key(sx,sz),end=key(ex,ez),closed=new Set(world.closed),queue=[[sx,sz]],prev=new Map([[start,null]]);for(let i=0;i<queue.length;i++){const [x,z]=queue[i];if(key(x,z)===end)break;for(const [dx,dz]of [[20,0],[-20,0],[0,20],[0,-20]]){const nx=x+dx,nz=z+dz,k=key(nx,nz);if(nx<-80||nx>80||nz<-60||nz>60||prev.has(k)||(closed.has(k)&&k!==start))continue;prev.set(k,key(x,z));queue.push([nx,nz])}}if(!prev.has(end))return null;let path=[],k=end;while(k){const [x,z]=k.split(',').map(Number);path.unshift({x,z});k=prev.get(k)}const result=[{x:from.x,z:sz},...path,{x:to.x,z:ez},{x:to.x,z:to.z}];return result.filter((p,i)=>!i||Math.hypot(p.x-result[i-1].x,p.z-result[i-1].z)>.05)}
-export function entrance(p,c){const slot=c.id%7;return {x:p.x-4.2+slot*1.4,z:p.z+6.3+(Math.floor(c.id/7)%2)*1.3}}
+export function entrance(p,c){const slot=c.id%5;return {x:p.x-4+slot*2,z:p.z+1.4+(Math.floor(c.id/5)%2)*2.2}}
 export function dangerAt(sim,x,z){return clamp(sim.world.hazards.reduce((s,h)=>s+Math.max(0,1-Math.hypot(x-h.x,z-h.z)/h.radius),0)+(sim.weather==='Storm'?.45:0),0,1)}

@@ -1,3 +1,4 @@
+import {currentPlan} from './life.js';
 import {clamp,dangerAt} from './city.js';
 export const actionNames=['Eating','Resting','Socializing','Working','Learning','Exploring','Healing','Seeking shelter'];
 export const inputNames=['Hunger','Fatigue','Loneliness','Money need','Curiosity','Health risk','Local danger','Night','Food supply','Rain','Temperature','Empathy','Ambition','Caution','Crowding','Home distance','Familiarity','Previous reward','Attachment','Power'];
@@ -14,7 +15,7 @@ export function infer(c,sim,nearby=0){const b=ensureBrain(c),w=wiring(c.id),nigh
  b.context=b.context.map((v,j)=>Math.tanh(v*.68+projection[j]*.22+w.recurrent[j].reduce((s,a,i)=>s+a*b.context[i],0)*.1));
  const learned=b.weights.map((row,a)=>row.reduce((s,v,j)=>s+(v+b.longWeights[a][j]) * sparse[j],0)/3);
  const drives=[inputs[0]*4,inputs[1]*3.5+inputs[7]*.45,inputs[2]*3,inputs[3]*.8+c.ambition/160,.3+c.curiosity/200, .25+c.curiosity/160,inputs[5]*4,inputs[6]*5];
- const q=drives.map((v,i)=>v+learned[i]+b.context[i]*.1);const allowed=[sim.food>0,true,true,c.age>=18,true,true,c.health<98,inputs[6]>.12||sim.weather==='Storm'];
+ const plan=currentPlan(c,sim);const q=drives.map((v,i)=>v+learned[i]+b.context[i]*.1+(actionNames[i]===plan.action ? .55 : 0));const allowed=[sim.food>0,true,true,c.age>=18,true,true,c.health<98,inputs[6]>.12||sim.weather==='Storm'];
  const max=Math.max(...q.filter((v,i)=>allowed[i]));let probabilities=q.map((v,i)=>allowed[i]?Math.exp((v-max)*2.3):0);const sum=probabilities.reduce((s,v)=>s+v,0);probabilities=probabilities.map(v=>v/sum);
  // Small deterministic exploration probability: repeatable per citizen and decision.
  let chosen=probabilities.indexOf(Math.max(...probabilities));if((sim.tick+c.id*13)%29===0){const r=rng(sim.tick+c.id*41)();let total=0;chosen=probabilities.findIndex(p=>(total+=p)>r);if(chosen<0)chosen=0}
